@@ -1,0 +1,4 @@
+template:
+    directory: website
+
+baseUrl: http://www.ethanhann.com
