@@ -1,0 +1,44 @@
+---
+import {getCollection} from "astro:content";
+import {Image} from "astro:assets";
+import Layout from "../layouts/Layout.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+import banner from "../assets/banner_squash.png";
+
+const projects = (await getCollection("projects")).sort(
+    (a, b) => (a.data.order ?? 99) - (b.data.order ?? 99)
+);
+const featured = projects.slice(0, 3);
+---
+
+<Layout
+        title="Ethan Hann"
+        description="Software engineer and farmer. Building open source in Rust and consulting selectively."
+>
+    <div class="mb-10 flex justify-center">
+        <Image
+                src={banner}
+                alt=""
+                widths={[400, 704, 1251]}
+                sizes="(min-width: 768px) 704px, calc(100vw - 64px)"
+                loading="eager"
+                decoding="async"
+                aria-hidden="true"
+        />
+    </div>
+
+    <h1>Ethan Hann</h1>
+    <p class="mt-6 text-lg leading-relaxed text-muted">
+        Software engineer and garlic farmer. I build and ship software mostly in Python, TypeScript, and Rust.
+    </p>
+
+    <h2>Selected projects</h2>
+    <div>
+        {featured.map((project) =>
+                <ProjectCard project={project.data}/>)}
+    </div>
+
+    <p class="mt-10">
+        <a href="/projects">See all projects &rarr;</a>
+    </p>
+</Layout>

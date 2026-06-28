@@ -1,0 +1,219 @@
+---
+import {ClientRouter} from "astro:transitions";
+import Icon from "../components/Icon.astro";
+import "../styles/global.css";
+
+interface Props {
+    title: string;
+    description?: string;
+    image?: string;
+    imageAlt?: string;
+    imageWidth?: number;
+    imageHeight?: number;
+    type?: "website" | "article";
+    noindex?: boolean;
+}
+
+const {
+    title,
+    description = "Ethan Hann · software engineer.",
+    image = "/og.jpg",
+    imageAlt = "Rows of garlic growing in a field on Ethan Hann's farm",
+    imageWidth = 1200,
+    imageHeight = 630,
+    type = "website",
+    noindex = false,
+} = Astro.props;
+
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site).href;
+const imageURL = new URL(image, Astro.site).href;
+
+const siteURL = Astro.site!.href;
+const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "Person",
+            "@id": new URL("#person", Astro.site).href,
+            name: "Ethan Hann",
+            url: siteURL,
+            jobTitle: "Software Engineer",
+            sameAs: [
+                "https://github.com/ethanhann",
+                "https://www.linkedin.com/in/ethanhann/",
+            ],
+            knowsAbout: ["Rust", "Python", "TypeScript", "JavaScript", "C#", "PHP", "Cloud architecture"],
+        },
+        {
+            "@type": "WebSite",
+            "@id": new URL("#website", Astro.site).href,
+            name: "Ethan Hann",
+            url: siteURL,
+            publisher: {"@id": new URL("#person", Astro.site).href},
+        },
+    ],
+};
+
+const navItems = [
+    {href: "/", label: "Home"},
+
+    {href: "/about", label: "About"},
+    {href: "/now", label: "Now"},
+    {href: "/projects", label: "Projects"},
+    {href: "/blog", label: "Blog"},
+];
+
+const settle = {
+    forwards: {
+        old: [
+            {
+                name: "settleOut",
+                duration: "120ms",
+                easing: "ease-out",
+                fillMode: "both",
+            },
+        ],
+        new: [
+            {
+                name: "settleIn",
+                duration: "260ms",
+                easing: "cubic-bezier(0.2, 0, 0, 1)",
+                fillMode: "both",
+            },
+        ],
+    },
+    backwards: {
+        old: [
+            {
+                name: "settleOut",
+                duration: "120ms",
+                easing: "ease-out",
+                fillMode: "both",
+            },
+        ],
+        new: [
+            {
+                name: "settleIn",
+                duration: "260ms",
+                easing: "cubic-bezier(0.2, 0, 0, 1)",
+                fillMode: "both",
+            },
+        ],
+    },
+};
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{title}</title>
+    <meta name="description" content={description}/>
+    {noindex && <meta name="robots" content="noindex, follow"/>}
+    <link rel="canonical" href={canonicalURL}/>
+
+    <meta property="og:type" content={type}/>
+    <meta property="og:site_name" content="Ethan Hann"/>
+    <meta property="og:locale" content="en_US"/>
+    <meta property="og:title" content={title}/>
+    <meta property="og:description" content={description}/>
+    <meta property="og:url" content={canonicalURL}/>
+    <meta property="og:image" content={imageURL}/>
+    <meta property="og:image:alt" content={imageAlt}/>
+    <meta property="og:image:width" content={String(imageWidth)}/>
+    <meta property="og:image:height" content={String(imageHeight)}/>
+
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:title" content={title}/>
+    <meta name="twitter:description" content={description}/>
+    <meta name="twitter:image" content={imageURL}/>
+    <meta name="twitter:image:alt" content={imageAlt}/>
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+    <link rel="sitemap" href="/sitemap-index.xml"/>
+    <link rel="alternate" type="application/rss+xml" title="Ethan Hann" href="/rss.xml"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap"
+            rel="stylesheet"
+    />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} is:inline/>
+    <ClientRouter/>
+</head>
+<body class="min-h-screen flex flex-col">
+<a
+        href="#main-content"
+        class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:border focus:border-border focus:bg-bg focus:px-4 focus:py-2 focus:text-white focus:no-underline"
+>
+    Skip to content
+</a>
+<header class="px-8 pt-10 sm:pt-16">
+    <div class="mx-auto flex max-w-prose items-center justify-between gap-6">
+        <a
+                href="/"
+                class="font-serif text-[1.05rem] tracking-tight text-white no-underline hover:no-underline"
+        >
+            Ethan Hann
+        </a>
+        <nav aria-label="Primary" class="flex gap-5 text-sm sm:gap-6">
+            {
+                navItems.map((item) => {
+                    const isActive = path === item.href;
+                    return (
+                            <a
+                                    href={item.href}
+                                    class:list={[
+                                        "transition-colors hover:text-white hover:no-underline",
+                                        isActive ? "text-white" : "text-muted",
+                                    ]}
+                                    aria-current={isActive ? "page" : undefined}
+                            >
+                                {item.label}
+                            </a>
+                    );
+                })
+            }
+        </nav>
+    </div>
+</header>
+<main
+        id="main-content"
+        tabindex="-1"
+        transition:animate={settle}
+        class="mx-auto w-full max-w-prose flex-1 px-8 pt-16 pb-32 sm:pt-24 focus:outline-none"
+>
+    <slot/>
+</main>
+<footer class="px-8 pb-12 pt-8 text-xs text-muted">
+    <div
+            class="mx-auto flex max-w-prose flex-wrap items-center justify-between gap-3"
+    >
+        <span>&copy; {new Date().getFullYear()} Ethan Hann</span>
+        <span class="flex gap-4">
+          <a
+                  href="https://github.com/ethanhann"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="GitHub"
+                  class="text-muted hover:text-white hover:no-underline"
+          >
+            <Icon name="github" class="h-4 w-4" />
+          </a>
+          <a
+                  href="https://www.linkedin.com/in/ethanhann/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn"
+                  class="text-muted hover:text-white hover:no-underline"
+          >
+            <Icon name="linkedin" class="h-4 w-4" />
+          </a>
+        </span>
+    </div>
+</footer>
+</body>
+</html>

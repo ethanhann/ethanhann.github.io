@@ -1,0 +1,47 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../layouts/Layout.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+
+const projects = (await getCollection("projects")).sort(
+  (a, b) => (a.data.order ?? 99) - (b.data.order ?? 99)
+);
+const backend = projects.filter((p) => p.data.kind === "backend");
+const frontend = projects.filter((p) => p.data.kind === "frontend");
+---
+
+<Layout
+  title="Projects · Ethan Hann"
+  description="Professional work I've shipped, plus open-source projects on GitHub."
+>
+  <h1>Projects</h1>
+  <p>
+    Professional work I've shipped, plus open-source projects on GitHub.
+  </p>
+
+  <h2>Backend</h2>
+  {
+    backend.length > 0 ? (
+      <div>
+        {backend.map((project) => (
+          <ProjectCard project={project.data} />
+        ))}
+      </div>
+    ) : (
+      <p class="text-muted">Nothing here yet.</p>
+    )
+  }
+
+  <h2>Frontend</h2>
+  {
+    frontend.length > 0 ? (
+      <div>
+        {frontend.map((project) => (
+          <ProjectCard project={project.data} />
+        ))}
+      </div>
+    ) : (
+      <p class="text-muted">Nothing here yet.</p>
+    )
+  }
+</Layout>

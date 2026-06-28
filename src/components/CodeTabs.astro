@@ -1,0 +1,61 @@
+---
+interface Props {
+    labels: string[];
+}
+
+const { labels } = Astro.props;
+const id = `ct-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<div class="code-tabs mt-6 mb-8" data-tabs={id}>
+    <div class="flex border-b border-border gap-0" role="tablist">
+        {labels.map((label, i) => (
+            <button
+                role="tab"
+                aria-selected={i === 0 ? "true" : "false"}
+                data-tab-index={i}
+                class:list={[
+                    "px-4 py-2 text-sm transition-colors cursor-pointer",
+                    "border-b-2 -mb-px",
+                    i === 0
+                        ? "text-white border-accent"
+                        : "text-muted border-transparent hover:text-white",
+                ]}
+            >
+                {label}
+            </button>
+        ))}
+    </div>
+    <div class="tab-panels">
+        {labels.length > 0 && <div role="tabpanel" data-panel-index="0"><slot name="tab-0" /></div>}
+        {labels.length > 1 && <div role="tabpanel" data-panel-index="1" class="hidden"><slot name="tab-1" /></div>}
+        {labels.length > 2 && <div role="tabpanel" data-panel-index="2" class="hidden"><slot name="tab-2" /></div>}
+        {labels.length > 3 && <div role="tabpanel" data-panel-index="3" class="hidden"><slot name="tab-3" /></div>}
+        {labels.length > 4 && <div role="tabpanel" data-panel-index="4" class="hidden"><slot name="tab-4" /></div>}
+    </div>
+</div>
+
+<script>
+    document.addEventListener("astro:page-load", () => {
+        document.querySelectorAll<HTMLElement>("[data-tabs]").forEach((root) => {
+            const buttons = root.querySelectorAll<HTMLButtonElement>("[role=tab]");
+            const panels = root.querySelectorAll<HTMLElement>("[role=tabpanel]");
+            buttons.forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    const idx = btn.dataset.tabIndex!;
+                    buttons.forEach((b) => {
+                        const active = b.dataset.tabIndex === idx;
+                        b.setAttribute("aria-selected", String(active));
+                        b.classList.toggle("text-white", active);
+                        b.classList.toggle("border-accent", active);
+                        b.classList.toggle("text-muted", !active);
+                        b.classList.toggle("border-transparent", !active);
+                    });
+                    panels.forEach((p) => {
+                        p.classList.toggle("hidden", p.dataset.panelIndex !== idx);
+                    });
+                });
+            });
+        });
+    });
+</script>
