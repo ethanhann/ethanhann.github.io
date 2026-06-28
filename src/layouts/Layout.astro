@@ -1,6 +1,7 @@
 ---
 import {ClientRouter} from "astro:transitions";
 import Icon from "../components/Icon.astro";
+import GoogleAnalytics from "../components/GoogleAnalytics.astro";
 import "../styles/global.css";
 
 interface Props {
@@ -142,6 +143,7 @@ const settle = {
             rel="stylesheet"
     />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} is:inline/>
+    <GoogleAnalytics/>
     <ClientRouter/>
 </head>
 <body class="min-h-screen flex flex-col">
