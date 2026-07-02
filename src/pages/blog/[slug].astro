@@ -14,7 +14,15 @@ const { post } = Astro.props;
 const { Content } = await render(post);
 ---
 
-<Layout title={`${post.data.title} · Ethan Hann`} description={post.data.description}>
+<Layout
+  title={`${post.data.title} · Ethan Hann`}
+  description={post.data.description}
+  type="article"
+  image={post.data.ogImage?.src}
+  imageAlt={post.data.ogImageAlt}
+  imageWidth={post.data.ogImage?.width}
+  imageHeight={post.data.ogImage?.height}
+>
   <article>
     <h1>{post.data.title}</h1>
     <time
