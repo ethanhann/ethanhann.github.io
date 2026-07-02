@@ -60,6 +60,8 @@ export default defineConfig({
             },
             defaultProps: {
                 showLineNumbers: true,
+                wrap: true,
+                enableCopy: true,
             },
         }),
         mdx(),
