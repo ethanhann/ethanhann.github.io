@@ -58,12 +58,12 @@ jobs:
     name: Validate (lint, test)
     runs-on: ubuntu-latest
 
-    # Baseline #1 (Linker): no RUSTFLAGS override, so every link step uses
-    # the default GNU ld.
-    # Baseline #2 (Compiler Cache): no sccache, so every compilation unit is
-    # rebuilt from scratch on every run.
-    # Baseline #3 (Dependency Cache): no cache action, so all dependencies
-    # are recompiled on every run.
+    # Baseline #1 (Linker): no RUSTFLAGS override, so every link
+    # step uses the default GNU ld.
+    # Baseline #2 (Compiler Cache): no sccache, so every compilation
+    # unit is rebuilt from scratch on every run.
+    # Baseline #3 (Dependency Cache): no cache action, so all
+    # dependencies are recompiled on every run.
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -100,13 +100,15 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      # Baseline #5 (Cross Compilation): `cargo install` compiles the cross
-      # tool from source on every run before any project code builds.
+      # Baseline #5 (Cross Compilation): `cargo install` compiles
+      # the cross tool from source on every run before any project
+      # code builds.
       - name: Install cross
         run: cargo install cross
 
-      # Baseline #6 (Build Environment): cross runs the build inside a Docker
-      # container that must be pulled first, once per matrix target.
+      # Baseline #6 (Build Environment): cross runs the build inside
+      # a Docker container that must be pulled first, once per matrix
+      # target.
       - name: Build with cross
         run: cross build --release --locked --target ${{ matrix.target }}
 
@@ -261,13 +263,14 @@ jobs:
     name: Validate (lint, test)
     runs-on: ubuntu-latest
     env:
-      # Optimization #1 (Linker): tell rustc to link with mold instead of the
-      # default GNU ld. Linking is the final, serial step of every build, and
-      # mold is dramatically faster at it.
+      # Optimization #1 (Linker): tell rustc to link with mold
+      # instead of the default GNU ld. Linking is the final, serial
+      # step of every build, and mold is dramatically faster at it.
       RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
-      # Optimization #2 (Compiler Cache): wrap every rustc invocation with
-      # sccache and store the results in the GitHub Actions cache, so
-      # compilation units that have not changed are fetched instead of rebuilt.
+      # Optimization #2 (Compiler Cache): wrap every rustc invocation
+      # with sccache and store the results in the GitHub Actions
+      # cache, so compilation units that have not changed are fetched
+      # instead of rebuilt.
       SCCACHE_GHA_ENABLED: "true"
       RUSTC_WRAPPER: sccache
 
@@ -278,19 +281,19 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      # Optimization #1 (Linker): install the mold binary that the RUSTFLAGS
-      # entry above points at.
+      # Optimization #1 (Linker): install the mold binary that the
+      # RUSTFLAGS entry above points at.
       - name: Install mold
         run: sudo apt-get update -y && sudo apt-get install -y mold
 
-      # Optimization #2 (Compiler Cache): install sccache and wire it up to
-      # the GitHub Actions cache backend.
+      # Optimization #2 (Compiler Cache): install sccache and wire it
+      # up to the GitHub Actions cache backend.
       - name: Configure sccache
         uses: mozilla-actions/sccache-action@v0.0.10
 
-      # Optimization #3 (Dependency Cache): restore ~/.cargo and the compiled
-      # dependencies in target/ between runs, so unchanged dependencies are
-      # never recompiled.
+      # Optimization #3 (Dependency Cache): restore ~/.cargo and the
+      # compiled dependencies in target/ between runs, so unchanged
+      # dependencies are never recompiled.
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
@@ -302,14 +305,15 @@ jobs:
       - name: cargo clippy
         run: cargo clippy --locked --all-targets --all-features -- -D warnings
 
-      # Optimization #4 (Test Runner): download a prebuilt cargo-nextest
-      # binary instead of compiling a tool from source with `cargo install`.
+      # Optimization #4 (Test Runner): download a prebuilt
+      # cargo-nextest binary instead of compiling a tool from source
+      # with `cargo install`.
       - name: Install cargo-nextest
         uses: taiki-e/install-action@nextest
 
-      # Optimization #4 (Test Runner): nextest runs each test in its own
-      # process and schedules them in parallel more effectively than
-      # plain `cargo test`.
+      # Optimization #4 (Test Runner): nextest runs each test in its
+      # own process and schedules them in parallel more effectively
+      # than plain `cargo test`.
       - name: Run tests
         run: cargo nextest run --locked --all-features
 
@@ -318,8 +322,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ validate ]
     env:
-      # Optimization #2 (Compiler Cache): sccache again, shared across both
-      # matrix targets through the GitHub Actions cache.
+      # Optimization #2 (Compiler Cache): sccache again, shared
+      # across both matrix targets through the GitHub Actions cache.
       SCCACHE_GHA_ENABLED: "true"
       RUSTC_WRAPPER: sccache
     strategy:
@@ -338,10 +342,11 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      # Optimization #6 (Build Environment): Zig provides the cross-compiling
-      # C toolchain and linker directly on the host runner. Both musl targets
-      # build on a plain x86_64 runner with no Docker faster_rust_ci to pull, no QEMU,
-      # and no dedicated ARM hardware.
+      # Optimization #6 (Build Environment): Zig provides the
+      # cross-compiling C toolchain and linker directly on the host
+      # runner. Both musl targets build on a plain x86_64 runner with
+      # no Docker images to pull, no QEMU, and no dedicated ARM
+      # hardware.
       - name: Install Zig
         uses: mlugg/setup-zig@v2
         with:
@@ -351,22 +356,23 @@ jobs:
       - name: Configure sccache
         uses: mozilla-actions/sccache-action@v0.0.10
 
-      # Optimization #3 (Dependency Cache): keyed per target so each matrix
-      # leg restores its own compiled dependencies.
+      # Optimization #3 (Dependency Cache): keyed per target so each
+      # matrix leg restores its own compiled dependencies.
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.target }}
 
       # Optimization #5 (Cross Compilation): download a prebuilt
-      # cargo-zigbuild binary. The unoptimized workflow compiles its cross
-      # tool from source with `cargo install` on every run.
+      # cargo-zigbuild binary. The unoptimized workflow compiles its
+      # cross tool from source with `cargo install` on every run.
       - name: Install cargo-zigbuild
         uses: taiki-e/install-action@cargo-zigbuild
 
-      # Optimizations #5 and #6: cargo-zigbuild drives an ordinary host-side
-      # cargo build and uses Zig as the cross-linker, replacing the
-      # Docker-based `cross build` from the unoptimized workflow.
+      # Optimizations #5 and #6: cargo-zigbuild drives an ordinary
+      # host-side cargo build and uses Zig as the cross-linker,
+      # replacing the Docker-based `cross build` from the unoptimized
+      # workflow.
       - name: Build with zigbuild
         run: cargo zigbuild --release --locked --target ${{ matrix.target }}
 
@@ -422,10 +428,12 @@ Caching has limits, and it is worth knowing them before you rely on these number
   For plain musl targets, Zig does the same job faster.
 
 ## Wrap-up
-
+ 
 None of these changes touched the application code.
 
 Six workflow-level swaps took the same pipeline from roughly 26 minutes to under 5.
 
 If you only take one thing from this post, add Swatinem/rust-cache and sccache to your workflow.
 Those two lines of YAML are where most of the minutes go.
+
+The workflows were run in [ethanhann/rust_build_demo](https://github.com/ethanhann/rust_build_demo).
