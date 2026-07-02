@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @theme {
     --color-bg: #141312;
@@ -16,7 +17,7 @@
 
 @layer utilities {
     .max-w-prose {
-        max-width: 44rem;
+        max-width: 48rem;
     }
 
     .highlight-text {
@@ -92,26 +93,86 @@
         @apply list-decimal pl-6 mb-5;
     }
 
-    :not(pre) > code {
-        @apply bg-border/60 text-accent-strong rounded px-1.5 py-0.5 text-[0.875em];
-    }
-
     .expressive-code {
         @apply mb-5;
-    }
-
-    blockquote {
-        @apply border-l-2 border-accent/40 pl-5 my-6 text-muted italic;
-    }
-
-    blockquote p {
-        @apply mb-0;
     }
 
     ::selection {
         background-color: var(--color-accent);
         color: var(--color-bg);
     }
+}
+
+.prose {
+    max-width: none;
+    font-size: 1.0625rem;
+    --tw-prose-body: #ebe7df;
+    --tw-prose-headings: #fff;
+    --tw-prose-lead: var(--color-muted);
+    --tw-prose-links: var(--color-accent);
+    --tw-prose-bold: #fff;
+    --tw-prose-counters: var(--color-muted);
+    --tw-prose-bullets: var(--color-muted);
+    --tw-prose-hr: var(--color-border);
+    --tw-prose-quotes: var(--color-muted);
+    --tw-prose-quote-borders: color-mix(in oklab, var(--color-accent) 40%, transparent);
+    --tw-prose-captions: var(--color-muted);
+    --tw-prose-code: var(--color-accent-strong);
+    --tw-prose-pre-code: #ebe7df;
+    --tw-prose-pre-bg: var(--color-border);
+    --tw-prose-th-borders: color-mix(in oklab, var(--color-accent) 40%, transparent);
+    --tw-prose-td-borders: var(--color-border);
+}
+
+.prose :is(h1, h2, h3, h4) {
+    font-family: var(--font-serif), serif;
+}
+
+.prose :is(h1, h2) {
+    font-weight: 400;
+}
+
+.prose :is(h3, h4) {
+    font-weight: 500;
+}
+
+.prose h2 {
+    margin-top: 4rem;
+}
+
+.prose a {
+    color: var(--color-accent);
+    font-weight: inherit;
+    text-decoration: none;
+}
+
+.prose a:hover {
+    color: var(--color-accent-strong);
+    text-decoration: underline;
+}
+
+.prose :not(pre) > code {
+    background-color: color-mix(in oklab, var(--color-border) 60%, transparent);
+    border-radius: 0.25rem;
+    padding: 0.125rem 0.375rem;
+}
+
+.prose code::before,
+.prose code::after {
+    content: none;
+}
+
+.prose blockquote {
+    font-weight: 400;
+}
+
+.prose blockquote p:first-of-type::before,
+.prose blockquote p:last-of-type::after {
+    content: none;
+}
+
+.prose th {
+    font-weight: 500;
 }
 
 @keyframes settleIn {
