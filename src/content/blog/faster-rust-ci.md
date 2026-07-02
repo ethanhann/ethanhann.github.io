@@ -24,12 +24,10 @@ That sounds like a big scary word, but it isn't.
 It means every time there is some generic type used in your Rust code, the compiler generates implementations
 for each concrete type.
 
-...ok, maybe that is kind of advanced.
+...ok, maybe that is kind of advanced. If you don't understand what that means, don't worry about it; know that
+this is a lot of work, and you want to avoid it when you can.
 
-If you don't understand what that means, don't worry about it; know that this is a lot of work, and you want to
-avoid it when you can.
-
-Cargo's default local caching behavior lets you avoid it when building locally.
+Cargo's default local caching behavior lets you avoid it when building locally. 
 
 In contrast, when a GitHub Actions runner starts, it is a clean slate.
 It downloads everything and does all three steps every time.
