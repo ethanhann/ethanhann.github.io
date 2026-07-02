@@ -2,7 +2,7 @@
 title: Faster Rust CI Jobs
 date: 2026-07-02
 description: Save GitHub Action Minutes for Rust Projects
-ogImage: ../../assets/blog/faster_rust_ci/optimized-rust-ci.png
+ogImage: ../../assets/blog/faster_rust_ci/optimization-table.png
 ogImageAlt: Optimized workflow run timings
 ---
 
