@@ -3,8 +3,8 @@ name: mantine-dataview
 url: https://github.com/ethanhann/mantine-dataview
 kind: frontend
 description:
-    A React grid component library built on Mantine v9 and TanStack Table v8.
-    It renders a server-driven, paginated data set as either a table or a card grid, switchable at runtime, with full feature parity between the two. 
+  A React grid component library built on Mantine v9 and TanStack Table v8.
+  It renders a server-driven, paginated data set as a table, card grid, schedule, or resource view, switchable at runtime, with nearly full feature parity between presentations.
 tags:
   - React
   - Mantine v9
