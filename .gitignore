@@ -137,3 +137,6 @@ dist
 
 # Local dev artifacts
 /data/
+
+# Mac
+.DS_Store
