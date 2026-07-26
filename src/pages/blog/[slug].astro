@@ -35,6 +35,9 @@ const { Content } = await render(post);
         day: "numeric",
       })}
     </time>
+    {post.data.description && (
+      <p class="text-lg text-muted mb-10">{post.data.description}</p>
+    )}
     <div class="prose">
       <Content />
     </div>
