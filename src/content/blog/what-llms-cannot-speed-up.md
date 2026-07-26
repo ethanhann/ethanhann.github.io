@@ -2,7 +2,7 @@
 title: What LLMs Cannot Speed Up
 date: 2026-07-26
 description: LLMs are pitched as a 10x silver bullet for software. Here is where they help, where they don't, and why executives keep falling for it.
-ogImage: ../../assets/blog/when_and_when_not_to_use_an_llm/when_and_when_not_to_use_an_llm_og_image.png
+ogImage: ../../assets/blog/what_llms_cannot_speed_up/what_llms_cannot_speed_up_og_image.png
 ogImageAlt: When (and When Not) to Use an LLM
 ---
 
