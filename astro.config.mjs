@@ -29,7 +29,7 @@ for (const file of readdirSync(blogDir)) {
 const blogIndexLastmod = [...blogLastmod.values()].sort().at(-1);
 
 export default defineConfig({
-    site: "https://www.ethanhann.com",
+    site: "https://ethanhann.com",
 
     vite: {
         plugins: [tailwindcss()],
