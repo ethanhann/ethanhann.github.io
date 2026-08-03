@@ -349,7 +349,7 @@ One call at the root covers the whole tree, however far the configuration surfac
 
 ### The Gate
 
-After validation you have a report and a spec.
+After validation, you have a report and a spec.
 The gate is the check that decides whether to continue.
 
 ```rust
