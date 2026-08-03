@@ -1,15 +1,22 @@
 ---
 title: Introducing confval
 date: 2026-08-03
-description: A Rust crate that reports every configuration problem, with a line and column for each, before a reload hot swaps the runtime config.
+description: A Rust crate for building reliable configuration subsystems.
 ogImage: ../../assets/blog/introducing_confval/confval_og_image.png
 ogImageAlt: confval logo
 ---
 
+Configuration systems are deceptively hard to get right.
+They have reliability and ergonomic concerns that organically emerge as they are developed.
+
+An operator might have a situation like this arise:
+
 A service is running.
-You edit its configuration file and tell it to reload.
+The operator edits the configuration file and reloads the service.
 The reload reports success.
-The next request kills the process.
+The next request causes the service to panic.
+
+That panic might show up like this:
 
 ```text
 handled a request on 127.0.0.1:8443 at level info
@@ -30,13 +37,13 @@ A second bad value went in with the same edit.
 `hostname` is now the empty string.
 No error has been reported for it.
 
-[confval](https://github.com/ethanhann/confval) is a Rust crate I wrote so that a reload is a decision you can make with confidence.
-Everything that can reject a configuration runs before the swap.
-After the swap, nothing is left in the configuration that can fail.
+[confval](https://github.com/ethanhann/confval) is a Rust crate I wrote specifically to solve this problem.
+It allows a startup or hot reload to be done with confidence.
+Everything that can reject a configuration runs before the runtime configuration is used.
 
 ## The Configuration and the Reload
 
-Here is the file the service is reading.
+The file the service is reading:
 
 ```toml
 hostname = "127.0.0.1"
@@ -47,7 +54,7 @@ level = "info"
 enabled = true
 ```
 
-Here is the reload path most Rust services start with.
+The reload path most Rust services start with.
 The current configuration is behind a lock.
 A reload deserializes the new text, then replaces what the lock holds.
 
@@ -123,13 +130,10 @@ fn handle_request(config: &Config) {
 The `parse()` call in `handle_request` is the line that panicked.
 It is also the only place in the program that lists the accepted log levels.
 
-## Why the Reload Said Yes
+## Why the Reload Was Not Rejected
 
-`toml::from_str` answers one question.
-Does this text match the shape of these structs?
-
-The reload needed a different question answered.
-Is this configuration safe to run?
+`toml::from_str` asks the question, "does this text match the shape of these structs?"
+The reload *needed* a different question answered, "is this configuration safe to run?"
 
 Look at what the four fields promise once they deserialize.
 `logging.enabled` is the only field that cannot go wrong.
@@ -244,7 +248,7 @@ Each stage exists to satisfy a line of the list above.
 
 You describe the configuration as two parallel struct layers.
 A spec type holds what the file said.
-A config type holds the resolved values the program runs on.
+A config type holds the resolved values the program uses.
 Validation reads the spec layer, so it sees every field before any value is converted.
 
 ### Spec Types Keep the Span and the Raw Value
@@ -340,7 +344,7 @@ For anything else you build an issue directly, starting from `.error()` or `.war
 Each impl covers only its own type's fields.
 The call that runs them is `validate_all`, which runs `validate` on the value it is called on and then descends into every `#[confval(nested)]` field beneath it, recursively.
 `#[derive(confval::Spec)]` generates that traversal from the struct definition.
-A nested block added tomorrow is validated without anyone editing a parent's validator.
+A nested block added in the future is validated without anyone editing a parent's validator.
 One call at the root covers the whole tree, however far the configuration surface grows.
 
 ### The Gate
@@ -355,15 +359,18 @@ if report.has_errors() {
 ```
 
 confval does not do this for you.
+This is by design.
 You check `report.has_errors()` after validation and decide what refusing means in your program.
 For a reload that means returning the rendered report and leaving the running configuration alone.
 At startup it usually means printing the report and exiting.
+
+confval also provides `report.has_warnings()` and `report.has_issues()` (i.e., whether the report has errors OR warnings), which you use at your discretion.
 
 The narrowing helpers below report an error rather than panicking.
 An ungated lowering therefore corrupts nothing.
 Without the gate, lowering adds its own errors to a report that has named the same values in clearer terms.
 
-### Lowering Narrows What Validation Already Checked
+### Lowering Narrows Types That Were Already Validated
 
 A config type declares how each field converts from its spec counterpart.
 
@@ -419,7 +426,7 @@ The conversion then reports a located error instead of truncating the value.
 The generated lowering destructures the spec with no rest pattern, so a field added to one layer without a counterpart on the other fails to compile.
 
 Lowering produces an owned struct with no borrows of the source text.
-That is the snapshot the reload swaps in.
+That is the snapshot the reload hot swaps.
 
 ## The Reload Path
 
@@ -457,7 +464,7 @@ fn reload(current: &RwLock<Arc<ServerConfig>>, name: &str, text: &str) -> Result
 }
 ```
 
-Give that the same edit from the opening, with the bad port added back so all three problems are present at once.
+Give that the same edit from the opening, with the bad port added back so all three problems are present at once:
 
 ```toml
 hostname = ""
@@ -467,7 +474,7 @@ port = 99999
 level = "infp"
 ```
 
-Here is a run that serves a request, attempts that reload, serves another request, then reloads a corrected file and serves a third.
+Here is a run that serves a request, attempts that reload, serves another request, then reloads a corrected file, and serves a third:
 
 ```text
 handled a request on 127.0.0.1:8443 at level info
@@ -539,14 +546,9 @@ At startup you print the report and exit instead of continuing to serve.
 ## When Not to Use confval
 
 confval fits configuration that people edit by hand, where a wrong value is expensive to catch late.
-It is more than you need when:
-
-- your configuration maps cleanly onto runtime types and one error at a time is fine.
-- you read a format other than TOML, HCL, or KDL, which means writing a frontend.
-- two struct layers per configuration surface is more typing than you want.
-- you need a settled API, which a pre-1.0 crate does not offer.
-
-In the first case, plain serde is less code.
+The biggest drawback of confval is that it adds complexity (e.g., an opinionated multi-layer architecture, derive macros, etc.).
+The reliability and ergonomics problems confval solves only really become an issue when the configuration surface grows.
+If your configuration surface is small and flat, you will be totally fine with TOML and Serde.
 
 ## Wrap-up
 
@@ -556,7 +558,7 @@ It parses into span-carrying spec types, validates every field into a shared rep
 Every check that can reject the configuration runs before the swap.
 Each problem is reported with its line and column in one pass.
 The swap installs an owned snapshot with no value left to interpret.
-A reload that is accepted leaves nothing for a request path to fail on.
+A reload that is accepted leaves nothing for a request path to fail on, and thus confidence in the reload is gained.
 
 If you want to try it:
 
