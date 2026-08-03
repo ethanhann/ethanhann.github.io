@@ -22,7 +22,7 @@ That panic might show up like this:
 handled a request on 127.0.0.1:8443 at level info
 reload accepted
 
-thread 'main' panicked at src/main.rs:59:53:
+thread 'main' panicked at src/main.rs:60:53:
 log level: "unknown log level: infp"
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 ```
@@ -55,13 +55,15 @@ enabled = true
 ```
 
 The reload path most Rust services start with.
-The current configuration is behind a lock.
-A reload deserializes the new text, then replaces what the lock holds.
+The current configuration is in an [`ArcSwap`](https://docs.rs/arc-swap).
+Each request loads an `Arc` snapshot out of it.
+A reload deserializes the new text, then stores it as the next snapshot.
 
 ```rust
+use arc_swap::ArcSwap;
 use serde::Deserialize;
 use std::str::FromStr;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
@@ -110,9 +112,9 @@ impl std::fmt::Display for Level {
     }
 }
 
-pub fn reload(current: &RwLock<Arc<Config>>, text: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn reload(current: &ArcSwap<Config>, text: &str) -> Result<(), Box<dyn std::error::Error>> {
     let next: Config = toml::from_str(text)?;
-    *current.write().unwrap() = Arc::new(next);
+    current.store(Arc::new(next));
     Ok(())
 }
 
@@ -207,7 +209,7 @@ Working backward from the failures above, a reload you can trust needs six thing
 
 1. Every check that can reject the configuration runs before the swap.
 2. No check can panic, because taking down a long-lived service over a typo is worse than refusing the edit.
-3. All of the problems arrive in one verdict, so you make one editing pass instead of one attempt per problem.
+3. All the problems arrive in one verdict, so you make one editing pass instead of one attempt per problem.
 4. The verdict is actionable, naming the file, the line, and the column of each problem.
 5. After the swap, nothing in the configuration can fail, because no value is left awaiting interpretation.
 6. The result is an owned snapshot that swaps atomically, so the previous configuration keeps serving until the new one has been checked.
@@ -435,6 +437,9 @@ Startup and reload run the same pipeline.
 `reload` calls it and swaps only on success.
 
 ```rust
+use arc_swap::ArcSwap;
+use std::sync::Arc;
+
 fn load(name: &str, text: &str) -> Result<ServerConfig, String> {
     let mut sources = SourceMap::new();
     let mut report = Report::new();
@@ -457,9 +462,9 @@ fn load(name: &str, text: &str) -> Result<ServerConfig, String> {
     ServerConfig::lower(&spec, &mut report).ok_or_else(|| "validated config lowers".to_string())
 }
 
-fn reload(current: &RwLock<Arc<ServerConfig>>, name: &str, text: &str) -> Result<(), String> {
+fn reload(current: &ArcSwap<ServerConfig>, name: &str, text: &str) -> Result<(), String> {
     let next = load(name, text)?;
-    *current.write().map_err(|_| "config lock poisoned")? = Arc::new(next);
+    current.store(Arc::new(next));
     Ok(())
 }
 ```
