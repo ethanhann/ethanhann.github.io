@@ -3,7 +3,8 @@ import {getCollection} from "astro:content";
 import {Image} from "astro:assets";
 import Layout from "../layouts/Layout.astro";
 import ProjectCard from "../components/ProjectCard.astro";
-import banner from "../assets/banner_squash.png";
+import Icon from "../components/Icon.astro";
+import headshot from "../assets/headshot.png";
 
 const projects = (await getCollection("projects")).sort(
     (a, b) => (a.data.order ?? 99) - (b.data.order ?? 99)
@@ -15,22 +16,54 @@ const featured = projects.slice(0, 3);
         title="Ethan Hann"
         description="Software engineer and farmer. Building open source in Rust and consulting selectively."
 >
-    <div class="mb-10 flex justify-center">
+    <section
+            class="flex flex-col items-center gap-6 rounded-xl border border-border bg-border/20 p-6 text-center sm:flex-row sm:items-start sm:gap-8 sm:p-8 sm:text-left"
+    >
         <Image
-                src={banner}
-                alt=""
-                widths={[400, 704, 1251]}
-                sizes="(min-width: 768px) 704px, calc(100vw - 64px)"
+                src={headshot}
+                alt="Ethan Hann"
+                widths={[144, 288, 432]}
+                sizes="(min-width: 640px) 144px, 128px"
                 loading="eager"
                 decoding="async"
-                aria-hidden="true"
+                class="h-32 w-32 shrink-0 rounded-full object-cover ring-1 ring-border sm:h-36 sm:w-36"
         />
-    </div>
 
-    <h1>Ethan Hann</h1>
-    <p class="mt-6 text-lg leading-relaxed text-muted">
-        Software engineer and garlic farmer. I build and ship software mostly in Python, TypeScript, and Rust.
-    </p>
+        <div class="min-w-0">
+            <h1>Ethan Hann</h1>
+            <p class="mt-3 mb-0 text-muted">
+                Software engineer and garlic farmer. I build and ship software mostly in Python, TypeScript, and Rust.
+            </p>
+
+            <ul class="mt-5 mb-0 flex list-none flex-wrap items-center justify-center gap-x-5 gap-y-2 p-0 text-sm sm:justify-start">
+                <li>
+                    <a href="/about" class="no-underline hover:underline">About me &rarr;</a>
+                </li>
+                <li>
+                    <a
+                            href="https://github.com/ethanhann"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="flex items-center gap-2 no-underline hover:underline"
+                    >
+                        <Icon name="github" class="h-4 w-4"/>
+                        GitHub
+                    </a>
+                </li>
+                <li>
+                    <a
+                            href="https://www.linkedin.com/in/ethanhann/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="flex items-center gap-2 no-underline hover:underline"
+                    >
+                        <Icon name="linkedin" class="h-4 w-4"/>
+                        LinkedIn
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </section>
 
     <h2>Selected projects</h2>
     <div>
