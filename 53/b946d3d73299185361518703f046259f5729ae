@@ -1,0 +1,14 @@
+src/content/blog/confval-what-is-missing.md
+  h_4fc023ad4863a8 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "53b946d3d73299185361518703f046259f5729ae",
+  "prompts": {},
+  "humans": {
+    "h_4fc023ad4863a8": {
+      "author": "Ethan Hann <ethanhann@gmail.com>"
+    }
+  }
+}
