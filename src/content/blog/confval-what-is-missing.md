@@ -1,5 +1,5 @@
 ---
-title: "Confval: What's Missing"
+title: "confval: What's Missing"
 date: 2026-08-25
 description: A list of future enhancements for confval.
 ogImage: ../../assets/blog/introducing_confval/confval_og_image.png
